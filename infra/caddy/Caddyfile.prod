@@ -1,0 +1,21 @@
+{
+	admin 0.0.0.0:2019
+	email {$ACME_EMAIL}
+
+	# sslip.io uses HTTP-01 challenge — no Cloudflare token needed.
+	# Each subdomain gets its own cert on first request (auto-HTTPS).
+}
+
+# Apex domain → web dashboard + API
+{$DOMAIN} {
+	@api path /api/* /auth/* /health
+	handle @api {
+		reverse_proxy api:4000
+	}
+	handle {
+		reverse_proxy web:80
+	}
+}
+
+# User app subdomains are added dynamically by the worker via Caddy admin API.
+# Each gets its own Let's Encrypt cert automatically on first request.
